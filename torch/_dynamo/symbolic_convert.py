@@ -21,6 +21,7 @@ from unittest.mock import patch
 import torch
 import torch._logging
 from torch._guards import Checkpointable, tracing, TracingContext
+from torch._subclasses import fake_tensor
 
 from . import (
     allowed_functions,
@@ -1930,6 +1931,7 @@ class InstructionTranslator(InstructionTranslatorBase):
         export_constraints,
         mutated_closure_cell_contents: Set[str],
         frame_state,
+        fake_mode: fake_tensor.FakeTensorMode = None,
     ):
         _step_logger()(
             logging.INFO,
@@ -1944,6 +1946,7 @@ class InstructionTranslator(InstructionTranslatorBase):
                 export,
                 export_constraints,
                 frame_state,
+                fake_mode=fake_mode,
             ),
             instructions=instructions,
             f_locals=f_locals,
