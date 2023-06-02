@@ -977,7 +977,7 @@ def export(
         summarize_dim_constraints=True,
         specialize_int=True,
         assume_static_by_default=assume_static_by_default,
-    ):
+    ), torch._guards.export_fake_mode(fake_mode):
         opt_f = optimize_assert(
             dynamo_normalization_capturing_compiler,
             hooks=Hooks(
@@ -987,7 +987,6 @@ def export(
             export=True,
             export_constraints=constraints,
             dynamic=(tracing_mode == "symbolic"),
-            fake_mode=fake_mode,
         )(f)
         # TODO(voz): We may have instances of `f` that mutate inputs, we should track sideffects and reject.
         try:
@@ -1179,7 +1178,6 @@ def optimize_assert(
     export=False,
     export_constraints=None,
     dynamic=False,
-    fake_mode: fake_tensor.FakeTensorMode = None,
 ):
     """
     The same as `torch._dynamo.optimize(backend, nopython=True)`
@@ -1191,10 +1189,7 @@ def optimize_assert(
 
     return _optimize_catch_errors(
         convert_frame.convert_frame_assert(
-            backend,
-            export=export,
-            export_constraints=export_constraints,
-            fake_mode=fake_mode,
+            backend, export=export, export_constraints=export_constraints
         ),
         hooks,
         backend_ctx_ctor,
