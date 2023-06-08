@@ -3534,10 +3534,6 @@ Failed inputs:
             ):
                 continue
 
-            # Use only univariate functions.
-            if len(expr.rhs.free_symbols) > 0:
-                continue
-
             # Update the value range of the left-hand side, if the
             # right-hand side provides a better range.
             symbol = expr.lhs
