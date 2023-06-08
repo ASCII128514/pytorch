@@ -1816,6 +1816,62 @@ TEST_F(VulkanAPITest, empty) {
   ASSERT_NO_THROW(at::empty({1, 17, 41, 53}, at::device(at::kVulkan).dtype(at::kFloat)));
 }
 
+TEST_F(VulkanAPITest, gelu) {
+  const auto in_cpu = at::rand({17, 197, 302, 5}, at::device(at::kCPU).dtype(at::kFloat));
+  const auto in_vulkan = in_cpu.vulkan();
+
+  auto out_cpu = at::gelu(in_cpu, "tanh");
+  auto out_vulkan = at::gelu(in_vulkan, "tanh");
+
+  auto check = almostEqual(out_cpu, out_vulkan.cpu());
+
+  if (!check) {
+    showRtol(out_cpu, out_vulkan.cpu());
+  }
+
+  ASSERT_TRUE(check);
+
+  // check none gelu approximation
+  auto out_cpu_none = at::gelu(in_cpu, "none");
+  auto out_vulkan_none = at::gelu(in_vulkan, "none");
+
+  auto check_none = almostEqual(out_cpu_none, out_vulkan_none.cpu());
+
+  if (!check_none) {
+    showRtol(out_cpu_none, out_vulkan_none.cpu());
+  }
+
+  ASSERT_TRUE(check_none);
+}
+
+TEST_F(VulkanAPITest, gelu_) {
+  auto cpu = at::rand({17, 197, 302, 5}, at::device(at::kCPU).dtype(at::kFloat));
+  auto vulkan = cpu.vulkan();
+
+  at::gelu_(cpu, "tanh");
+  at::gelu_(vulkan, "tanh");
+
+  auto check = almostEqual(cpu, vulkan.cpu());
+  if (!check) {
+    showRtol(cpu, vulkan.cpu());
+  }
+
+  ASSERT_TRUE(check);
+
+  // check none gelu approximation
+  auto cpu_none = at::rand({17, 197, 302, 5}, at::device(at::kCPU).dtype(at::kFloat));
+  auto vulkan_none = cpu_none.vulkan();
+  at::gelu_(cpu_none, "none");
+  at::gelu_(vulkan_none, "none");
+
+  auto check_none = almostEqual(cpu_none, vulkan_none.cpu());
+  if (!check_none) {
+    showRtol(cpu, vulkan.cpu());
+  }
+
+  ASSERT_TRUE(check_none);
+}
+
 void test_glu(const at::IntArrayRef input_shape) {
   const auto in_cpu = at::rand(input_shape, at::device(at::kCPU).dtype(at::kFloat));
   const auto in_vulkan = in_cpu.vulkan();

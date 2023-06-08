@@ -363,6 +363,17 @@ Tensor& activation_scalar_(
   return self_arg;
 }
 
+Tensor gelu(const Tensor& self_arg, c10::string_view approximate) {
+  Scalar kBetaVec = M_SQRT2 * M_2_SQRTPI * 0.5;
+  return ops::activation_scalar(
+      self_arg, kBetaVec, VK_KERNEL(gelu));
+}
+
+Tensor& gelu_(Tensor& self, c10::string_view approximate) {
+  Scalar kBetaVec = M_SQRT2 * M_2_SQRTPI * 0.5;
+  return ops::activation_scalar_(self, kBetaVec, VK_KERNEL(gelu_));
+}
+
 Tensor hardshrink(const Tensor& self_arg, const Scalar& lambd) {
   float abs_lambd = std::abs(lambd.to<float>());
   return ops::activation_scalar(self_arg, abs_lambd, VK_KERNEL(hardshrink));
@@ -411,6 +422,8 @@ Tensor& abs_(Tensor& self) {
 TORCH_LIBRARY_IMPL(aten, Vulkan, m) {
   m.impl(TORCH_SELECTIVE_NAME("aten::clamp"), TORCH_FN(clamp));
   m.impl(TORCH_SELECTIVE_NAME("aten::clamp_"), TORCH_FN(clamp_));
+  m.impl(TORCH_SELECTIVE_NAME("aten::gelu"), gelu);
+  m.impl(TORCH_SELECTIVE_NAME("aten::gelu_"), gelu_);
   m.impl(TORCH_SELECTIVE_NAME("aten::hardsigmoid"), hardsigmoid);
   m.impl(TORCH_SELECTIVE_NAME("aten::hardsigmoid_"), hardsigmoid_);
   m.impl(TORCH_SELECTIVE_NAME("aten::hardshrink"), hardshrink);
