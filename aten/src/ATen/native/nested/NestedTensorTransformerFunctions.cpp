@@ -8,7 +8,8 @@
 #include <c10/util/string_view.h>
 #include <c10/util/Exception.h>
 #include <c10/util/Optional.h>
-
+#include <iostream>
+using namespace std;
 namespace at {
 namespace native {
 namespace {
@@ -60,6 +61,7 @@ Tensor nested_linear(
     const Tensor& input,
     const Tensor& weight,
     const c10::optional<Tensor>& bias_opt) {
+  cout << "nested linear";
   check_nested_tensor_matrix_constraints(input, weight, c10::string_view{"Linear"});
   auto* nt_input = get_nested_tensor_impl(input);
   const Tensor& input_buffer = nt_input->get_buffer();
