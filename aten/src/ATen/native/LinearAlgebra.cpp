@@ -1473,6 +1473,7 @@ static void addbmm_impl_(
   }
 
   auto adjusted_beta(beta);
+  std::cout << "in addbmm_impl_";
   for (const auto batch : c10::irange(num_batches)) {
     result.addmm_(batch1[batch], batch2[batch], adjusted_beta, alpha);
     adjusted_beta = 1; // accumulate output once
