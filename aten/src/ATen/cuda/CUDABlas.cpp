@@ -9,7 +9,7 @@
 #include <c10/macros/Export.h>
 #include <c10/util/irange.h>
 #include <iostream>
-
+using namespace std;
 // cublasLT was introduced in CUDA 10.1 but we enable only for 11.1 that also
 // added bf16 support
 #if !defined(USE_ROCM) && !defined(_MSC_VER)
