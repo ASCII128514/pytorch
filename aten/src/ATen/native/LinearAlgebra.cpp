@@ -21,8 +21,7 @@
 #include <c10/util/accumulate.h>
 #include <c10/util/irange.h>
 #include <c10/util/variant.h>
-#include <iostream>
-using namespace std;
+
 #ifndef AT_PER_OPERATOR_HEADERS
 #include <ATen/Functions.h>
 #include <ATen/NativeFunctions.h>
@@ -134,6 +133,7 @@ using namespace std;
 #include <string>
 #include <tuple>
 #include <utility>
+#include <iostream>
 
 namespace at {
 
@@ -1480,7 +1480,7 @@ static void addbmm_impl_(
 }
 
 Tensor& addbmm_out(const Tensor& self, const Tensor& batch1, const Tensor& batch2, const Scalar& beta, const Scalar& alpha, Tensor& result) {
-  cout << "in addmm_out in linearAlgebra.cpp\n";
+  std::cout << "in addmm_out in linearAlgebra.cpp\n";
   auto b_self = expand_size(self, {batch1.size(1), batch2.size(2)}, "addbmm_out");
   {
     at::NoNamesGuard guard;
