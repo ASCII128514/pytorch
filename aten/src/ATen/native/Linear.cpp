@@ -41,25 +41,28 @@ namespace at { namespace native {
 
 Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Tensor>& bias_opt) {
   // See [Note: hacky wrapper removal for optional tensor]
-  cout << "in linear.cpp";
   auto bias = bias_opt.has_value()
     ? c10::MaybeOwned<Tensor>::borrowed(*bias_opt)
     : c10::MaybeOwned<Tensor>::owned(c10::in_place);
 
   if (input.is_mkldnn()) {
+    cout << "in linear.cpp, if 1";
     return at::mkldnn_linear(input, weight, *bias);
   }
 #if defined(C10_MOBILE)
   if (xnnpack::use_linear(input, weight, *bias)) {
+    cout << "in linear.cpp, if 2";
     return xnnpack::linear(input, weight, *bias);
   }
 #endif
   if (input.dim() == 2 && bias->defined()) {
     // Fused op is marginally faster.
+    cout << "in linear.cpp, if 3";
     return at::addmm(*bias, input, weight.t());
   }
   if (input.dim() == 3 && bias->defined() && input.is_contiguous() &&
       !input.is_xla()) {
+    cout << "in linear.cpp, if 4";
     // Also hit the fused path for contiguous 3D input, if not using xla
     // backend. Reshaping/flattening has some performance implications on xla.
     const auto input_sizes = input.sym_sizes();
@@ -71,8 +74,10 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
     // for composite compliance use out-of-place version of `add`
     if (isTensorSubclassLike(*bias) ||
         bias->_fw_grad(/*level*/ 0).defined()) {
+      cout << "in linear.cpp, if 5";
       output = at::add(output, *bias);
     } else {
+      cout << "in linear.cpp, if 6";
       output.add_(*bias);
     }
   }

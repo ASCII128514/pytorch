@@ -12,7 +12,7 @@
 #include <ATen/core/Tensor.h>
 #include <ATen/native/layer_norm.h>
 #include <ATen/native/nested/NestedTensorUtils.h>
-
+#include <iostream>
 #include <tuple>
 
 namespace at {
@@ -253,6 +253,7 @@ Tensor matmul_with_bmm_nested(const Tensor& self, const Tensor& mat2) {
 // for each batch dimension `self` and `mat2` must have same size.
 // TODO: Should make full matmul semantics support some day
 Tensor matmul_nested(const Tensor& self, const Tensor& mat2) {
+  std::cout << "in NestedTensorMatmil.cpp matmul_nested\n"
   if (self.is_nested() && !mat2.is_nested()) {
     AT_ERROR("Expected both to be nested, but got a nested self and non-nested other");
   }

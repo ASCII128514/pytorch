@@ -1497,6 +1497,7 @@ Tensor &addbmm_(Tensor& self, const Tensor& batch1, const Tensor& batch2, const 
 
 Tensor addbmm(const Tensor& self, const Tensor& batch1, const Tensor& batch2, const Scalar& beta, const Scalar& alpha) {
   Tensor result = at::empty({0}, self.options());
+  std::cout << "in LinearAlgebra.cpp addbmm";
   return native::addbmm_out(self, batch1, batch2, beta, alpha, result);
 }
 
@@ -1982,6 +1983,7 @@ Tensor _matmul_impl(
 Tensor matmul(const Tensor & tensor1, const Tensor & tensor2) {
   auto maybe_outnames = namedinference::compute_matmul_outnames(tensor1, tensor2);
   at::Tensor result, unused;
+  std::cout << "in linearAlgebra.cpp matmul\n";
   result = at::native::_matmul_impl(unused, tensor1, tensor2);
   namedinference::propagate_names_if_nonempty(result, maybe_outnames);
   return result;
