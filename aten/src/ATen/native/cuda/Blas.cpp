@@ -9,6 +9,7 @@
 #include <ATen/native/Resize.h>
 #include <c10/util/MaybeOwned.h>
 
+#include <iostream>
 #ifndef AT_PER_OPERATOR_HEADERS
 #include <ATen/Functions.h>
 #include <ATen/NativeFunctions.h>
@@ -163,7 +164,7 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
   // preflights a check to try to avoid actually needing to call
   // expand().
   TORCH_CHECK(mat1.dim() == 2 && mat2.dim() == 2, "tensors must be 2-D");
-
+  std::cout << "in addmm_out_cuda_impl";
   TensorArg args[]{{result, "out", 0}, {self, "self", 1}, {mat1, "mat1", 2}, {mat2, "mat2", 3}};
   checkAllSameGPU(__func__, args);
 
