@@ -1473,7 +1473,7 @@ static void addbmm_impl_(
   }
 
   auto adjusted_beta(beta);
-  std::cout << "in addbmm_impl_";
+  std::cout << "addbmm_impl_ linear_algebra.cpp\n";
   for (const auto batch : c10::irange(num_batches)) {
     result.addmm_(batch1[batch], batch2[batch], adjusted_beta, alpha);
     adjusted_beta = 1; // accumulate output once
@@ -1481,7 +1481,7 @@ static void addbmm_impl_(
 }
 
 Tensor& addbmm_out(const Tensor& self, const Tensor& batch1, const Tensor& batch2, const Scalar& beta, const Scalar& alpha, Tensor& result) {
-  std::cout << "in addmm_out in linearAlgebra.cpp\n";
+  std::cout << "addmm_out linearAlgebra.cpp\n";
   auto b_self = expand_size(self, {batch1.size(1), batch2.size(2)}, "addbmm_out");
   {
     at::NoNamesGuard guard;
@@ -1498,7 +1498,7 @@ Tensor &addbmm_(Tensor& self, const Tensor& batch1, const Tensor& batch2, const 
 
 Tensor addbmm(const Tensor& self, const Tensor& batch1, const Tensor& batch2, const Scalar& beta, const Scalar& alpha) {
   Tensor result = at::empty({0}, self.options());
-  std::cout << "in LinearAlgebra.cpp addbmm";
+  std::cout << "addbmm LinearAlgebra.cpp\n";
   return native::addbmm_out(self, batch1, batch2, beta, alpha, result);
 }
 
@@ -1846,7 +1846,7 @@ Tensor _matmul_impl(
   NoNamesGuard guard;
   const auto dim_tensor1 = tensor1.dim();
   const auto dim_tensor2 = tensor2.dim();
-  std::cout << "_matmul_impl linearAlgebra.cpp";
+  std::cout << "_matmul_impl linearAlgebra.cpp\n";
   // This is checked up here to simplify the logic below
   // Note that the strings are just evaluated on failure, so almost always we just evaluate
   // the condition and move on
@@ -1857,14 +1857,22 @@ Tensor _matmul_impl(
 
   const bool has_out = out.defined();
 
+  // dispatch to different operations
   if (dim_tensor1 == 1 && dim_tensor2 == 1) {
+    // dot product
     return has_out ? at::dot_out(out, tensor1, tensor2) : tensor1.dot(tensor2);
   } else if (dim_tensor1 == 2 && dim_tensor2 == 1) {
+
+    // matrix vector multiplication
     return has_out ? at::mv_out(out, tensor1, tensor2) : tensor1.mv(tensor2);
   } else if (dim_tensor1 == 1 && dim_tensor2 == 2) {
+
+    // vector matrix multiplication, treat as 2 by 2 matrix multiplication by adding a dimension
     return has_out ? at::mm_out(out, tensor1.unsqueeze(0), tensor2).squeeze_(0)
                    : tensor1.unsqueeze(0).mm(tensor2).squeeze_(0);
   } else if (dim_tensor1 == 2 && dim_tensor2 == 2) {
+
+    // 2D matrix mult
     return has_out ? at::mm_out(out, tensor1, tensor2) : tensor1.mm(tensor2);
   } else if (should_fold(tensor1, dim_tensor2) || should_fold(tensor2, dim_tensor1)) {
     // dim_tensor1 >=3 && (dim_tensor2 == 1 || dim_tensor2 == 2) ||
@@ -1984,7 +1992,7 @@ Tensor _matmul_impl(
 Tensor matmul(const Tensor & tensor1, const Tensor & tensor2) {
   auto maybe_outnames = namedinference::compute_matmul_outnames(tensor1, tensor2);
   at::Tensor result, unused;
-  std::cout << "in linearAlgebra.cpp matmul\n";
+  std::cout << "matmul linearAlgebra.cpp\n";
   result = at::native::_matmul_impl(unused, tensor1, tensor2);
   namedinference::propagate_names_if_nonempty(result, maybe_outnames);
   return result;
