@@ -166,7 +166,6 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
   std::chrono::steady_clock::time_point begin =
       std::chrono::steady_clock::now();
   TORCH_CHECK(mat1.dim() == 2 && mat2.dim() == 2, "tensors must be 2-D");
-  std::cout << "addmm_out_cuda_impl Blas.cpp\n";
   TensorArg args[]{{result, "out", 0}, {self, "self", 1}, {mat1, "mat1", 2}, {mat2, "mat2", 3}};
   checkAllSameGPU(__func__, args);
 
@@ -259,7 +258,7 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
                      end - begin)
                      .count()
               << ", "
-              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+              << "addmm_out_cuda_impl Blas.cpp" << std::endl;
     return result;
   }
 
@@ -303,7 +302,7 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
                        end - begin)
                        .count()
                 << ", "
-                << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+                << "addmm_out_cuda_impl Blas.cpp" << std::endl;
       return result.zero_();
     }
     // TODO: We could squeeze some perf by calling at::cuda::mul_out here instead, to bypass the dispatcher.
@@ -332,8 +331,17 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
                      end - begin)
                      .count()
               << ", "
-              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
-    return tmp;
+              << "addmm_out_cuda_impl Blas.cpp" << std::endl;
+    return at::mul_out(
+        result,
+        self,
+        at::native::scalar_tensor(
+            beta,
+            self.scalar_type(),
+            c10::nullopt /* layout */,
+            at::kCPU,
+            c10::nullopt /* pin_memory */));
+    ;
   }
 
   TORCH_INTERNAL_ASSERT_DEBUG_ONLY(!result_->is_conj());
@@ -441,7 +449,7 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
             << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
                    .count()
             << ", "
-            << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+            << "addmm_out_cuda_impl Blas.cpp" << std::endl;
   return result;
 }
 
