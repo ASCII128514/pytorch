@@ -1872,7 +1872,6 @@ Tensor _matmul_impl(
   NoNamesGuard guard;
   const auto dim_tensor1 = tensor1.dim();
   const auto dim_tensor2 = tensor2.dim();
-  std::cout << "_matmul_impl linearAlgebra.cpp\n";
   // This is checked up here to simplify the logic below
   // Note that the strings are just evaluated on failure, so almost always we just evaluate
   // the condition and move on

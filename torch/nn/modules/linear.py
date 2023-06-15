@@ -113,9 +113,9 @@ class Linear(Module):
 
     def forward(self, input: Tensor) -> Tensor:
         print("In nn.modules.linear")
-        tic = time.time()
+        tic = time.time_ns()
         tmp = F.linear(input, self.weight, self.bias)
-        tok = time.time()
+        tok = time.time_ns()
         print(f"{tic}, {tok}, {tok - tic}, linear forward, linear.py")
         return tmp
 
