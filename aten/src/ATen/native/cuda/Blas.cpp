@@ -163,6 +163,8 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
   // Make sure to keep addmm_cuda below in sync with this code; it
   // preflights a check to try to avoid actually needing to call
   // expand().
+  std::chrono::steady_clock::time_point begin =
+      std::chrono::steady_clock::now();
   TORCH_CHECK(mat1.dim() == 2 && mat2.dim() == 2, "tensors must be 2-D");
   std::cout << "addmm_out_cuda_impl Blas.cpp\n";
   TensorArg args[]{{result, "out", 0}, {self, "self", 1}, {mat1, "mat1", 2}, {mat2, "mat2", 3}};
@@ -242,6 +244,22 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
 
   IntArrayRef result_sizes = result.sizes();
   if ((result_sizes[0] == 0) || (result_sizes[1] == 0)) {
+    std::chrono::steady_clock::time_point end =
+        std::chrono::steady_clock::now();
+
+    std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     begin.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end - begin)
+                     .count()
+              << ", "
+              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
     return result;
   }
 
@@ -270,11 +288,27 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
     // By definition, when beta==0, values in self should be ignored. nans and infs
     // should not propagate
     if (beta.toComplexDouble() == 0.) {
+      std::chrono::steady_clock::time_point end =
+          std::chrono::steady_clock::now();
+
+      std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                       begin.time_since_epoch())
+                       .count()
+                << ", "
+                << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                       end.time_since_epoch())
+                       .count()
+                << ", "
+                << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                       end - begin)
+                       .count()
+                << ", "
+                << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
       return result.zero_();
     }
     // TODO: We could squeeze some perf by calling at::cuda::mul_out here instead, to bypass the dispatcher.
     // That requires some fixing some internal build dependencies though.
-    return at::mul_out(
+    auto tmp = at::mul_out(
         result,
         self,
         at::native::scalar_tensor(
@@ -283,6 +317,23 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
             c10::nullopt /* layout */,
             at::kCPU,
             c10::nullopt /* pin_memory */));
+    std::chrono::steady_clock::time_point end =
+        std::chrono::steady_clock::now();
+
+    std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     begin.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end - begin)
+                     .count()
+              << ", "
+              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+    return tmp;
   }
 
   TORCH_INTERNAL_ASSERT_DEBUG_ONLY(!result_->is_conj());
@@ -376,6 +427,21 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
   if (!result.is_same(*result_)) {
     result.copy_(*result_);
   }
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+  std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                   begin.time_since_epoch())
+                   .count()
+            << ", "
+            << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                   end.time_since_epoch())
+                   .count()
+            << ", "
+            << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
+                   .count()
+            << ", "
+            << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
   return result;
 }
 
