@@ -128,12 +128,13 @@
 #include <ATen/ops/zeros_like.h>
 #endif
 
+#include <chrono>
+#include <iostream>
 #include <limits>
 #include <numeric>
 #include <string>
 #include <tuple>
 #include <utility>
-#include <iostream>
 
 namespace at {
 
@@ -1440,6 +1441,8 @@ static void addmm_impl_cpu_(
 
 static void addbmm_impl_(
     Tensor &result, const Tensor &self, const Tensor &batch1, const Tensor &batch2, const Scalar& beta, const Scalar& alpha) {
+  std::chrono::steady_clock::time_point start =
+      std::chrono::steady_clock::now();
   TORCH_CHECK(batch1.dim() == 3, "batch1 must be a 3D tensor");
   TORCH_CHECK(batch2.dim() == 3, "batch2 must be a 3D tensor");
   TORCH_CHECK(batch1.size(0) == batch2.size(0),
@@ -1469,19 +1472,34 @@ static void addbmm_impl_(
     } else {
       result.zero_();
     }
+    std::chrono::steady_clock::time_point end =
+        std::chrono::steady_clock::now();
+
+    std::cout << begin << ", " << end << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end - begin)
+                     .count()
+              << ", "
+              << "addbmm_out, LinearAlgebra.cpp" << std::endl;
     return;
   }
 
   auto adjusted_beta(beta);
-  std::cout << "addbmm_impl_ linear_algebra.cpp\n";
   for (const auto batch : c10::irange(num_batches)) {
     result.addmm_(batch1[batch], batch2[batch], adjusted_beta, alpha);
     adjusted_beta = 1; // accumulate output once
   }
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+  std::cout << begin << ", " << end << ", "
+            << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
+                   .count()
+            << ", "
+            << "addbmm_impl_, LinearAlgebra.cpp" << std::endl;
 }
 
 Tensor& addbmm_out(const Tensor& self, const Tensor& batch1, const Tensor& batch2, const Scalar& beta, const Scalar& alpha, Tensor& result) {
-  std::cout << "addmm_out linearAlgebra.cpp\n";
+  std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
   auto b_self = expand_size(self, {batch1.size(1), batch2.size(2)}, "addbmm_out");
   {
     at::NoNamesGuard guard;
@@ -1489,6 +1507,13 @@ Tensor& addbmm_out(const Tensor& self, const Tensor& batch1, const Tensor& batch
   }
   auto names = at::namedinference::propagate_names_for_addmm(batch1, batch2, self);
   at::namedinference::propagate_names_if_nonempty(result, names);
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+  std::cout << begin << ", " << end << ", "
+            << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
+                   .count()
+            << ", "
+            << "addbmm_out, LinearAlgebra.cpp" << std::endl;
   return result;
 }
 
@@ -1843,6 +1868,7 @@ Tensor _matmul_impl(
     Tensor& out,
     const Tensor& tensor1,
     const Tensor& tensor2) {
+  std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
   NoNamesGuard guard;
   const auto dim_tensor1 = tensor1.dim();
   const auto dim_tensor2 = tensor2.dim();
@@ -1860,20 +1886,63 @@ Tensor _matmul_impl(
   // dispatch to different operations
   if (dim_tensor1 == 1 && dim_tensor2 == 1) {
     // dot product
-    return has_out ? at::dot_out(out, tensor1, tensor2) : tensor1.dot(tensor2);
+    auto tmp =  has_out ? at::dot_out(out, tensor1, tensor2) : tensor1.dot(tensor2);
+    std::chrono::steady_clock::time_point end =
+        std::chrono::steady_clock::now();
+
+    std::cout << begin << ", " << end << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end - begin)
+                     .count()
+              << ", "
+              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+    return tmp;
   } else if (dim_tensor1 == 2 && dim_tensor2 == 1) {
 
     // matrix vector multiplication
-    return has_out ? at::mv_out(out, tensor1, tensor2) : tensor1.mv(tensor2);
+    auto tmp = has_out ? at::mv_out(out, tensor1, tensor2) : tensor1.mv(tensor2);
+    std::chrono::steady_clock::time_point end =
+        std::chrono::steady_clock::now();
+
+    std::cout << begin << ", " << end << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end - begin)
+                     .count()
+              << ", "
+              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+    return tmp;
   } else if (dim_tensor1 == 1 && dim_tensor2 == 2) {
 
     // vector matrix multiplication, treat as 2 by 2 matrix multiplication by adding a dimension
-    return has_out ? at::mm_out(out, tensor1.unsqueeze(0), tensor2).squeeze_(0)
+    auto tmp =  has_out ? at::mm_out(out, tensor1.unsqueeze(0), tensor2).squeeze_(0)
                    : tensor1.unsqueeze(0).mm(tensor2).squeeze_(0);
+
+    std::chrono::steady_clock::time_point end =
+        std::chrono::steady_clock::now();
+
+    std::cout << begin << ", " << end << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end - begin)
+                     .count()
+              << ", "
+              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+    return tmp;
   } else if (dim_tensor1 == 2 && dim_tensor2 == 2) {
 
     // 2D matrix mult
-    return has_out ? at::mm_out(out, tensor1, tensor2) : tensor1.mm(tensor2);
+    auto tmp =
+        has_out ? at::mm_out(out, tensor1, tensor2) : tensor1.mm(tensor2);
+    std::chrono::steady_clock::time_point end =
+        std::chrono::steady_clock::now();
+
+    std::cout << begin << ", " << end << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end - begin)
+                     .count()
+              << ", "
+              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+    return tmp;
+    return
   } else if (should_fold(tensor1, dim_tensor2) || should_fold(tensor2, dim_tensor1)) {
     // dim_tensor1 >=3 && (dim_tensor2 == 1 || dim_tensor2 == 2) ||
     // dim_tensor2 >=3 && (dim_tensor1 == 1 || dim_tensor1 == 2)
@@ -1909,9 +1978,30 @@ Tensor _matmul_impl(
         // FIXME This path always does an unnecessary copy when transpose == true as the returned
         // result from BLAS is already C-transposed
         const auto output = at::_unsafe_view(t1_folded.mm(*t2), output_shape);
-        return transpose ? output.mT().contiguous() : output;
+
+        auto tmp = transpose ? output.mT().contiguous() : output;
+        std::chrono::steady_clock::time_point end =
+            std::chrono::steady_clock::now();
+
+        std::cout << begin << ", " << end << ", "
+                  << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                         end - begin)
+                         .count()
+                  << ", "
+                  << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+        return tmp;
       } else {
-        return at::_unsafe_view(t1_folded.mv(*t2), output_shape);
+        auto tmp = at::_unsafe_view(t1_folded.mv(*t2), output_shape);
+        std::chrono::steady_clock::time_point end =
+            std::chrono::steady_clock::now();
+
+        std::cout << begin << ", " << end << ", "
+                  << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                         end - begin)
+                         .count()
+                  << ", "
+                  << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+        return tmp;
       }
     } else {
       // Resize output into the correct shape
@@ -1939,6 +2029,15 @@ Tensor _matmul_impl(
       if (!reshaped_out.is_alias_of(out)) {
         out_->copy_(reshaped_out.view_as(*out_));
       }
+      std::chrono::steady_clock::time_point end =
+          std::chrono::steady_clock::now();
+
+      std::cout << begin << ", " << end << ", "
+                << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                       end - begin)
+                       .count()
+                << ", "
+                << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
       return out;
     }
   } else {
@@ -1984,17 +2083,34 @@ Tensor _matmul_impl(
       if (!reshaped_out.is_alias_of(out)) {
         out.copy_(reshaped_out.view_as(out));
       }
+      std::chrono::steady_clock::time_point end =
+          std::chrono::steady_clock::now();
+
+      std::cout << begin << ", " << end << ", "
+                << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                       end - begin)
+                       .count()
+                << ", "
+                << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
       return out;
     }
   }
 }
 
 Tensor matmul(const Tensor & tensor1, const Tensor & tensor2) {
+  // timer for the operation
+  result = at::native::_matmul_impl(unused, tensor1, tensor2);
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
   auto maybe_outnames = namedinference::compute_matmul_outnames(tensor1, tensor2);
   at::Tensor result, unused;
-  std::cout << "matmul linearAlgebra.cpp\n";
-  result = at::native::_matmul_impl(unused, tensor1, tensor2);
   namedinference::propagate_names_if_nonempty(result, maybe_outnames);
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+  std::cout << begin << ", " << end << ", "
+            << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
+                   .count()
+            << ", "
+            << "matmul, LinearAlgebra.cpp" << std::endl;
   return result;
 }
 

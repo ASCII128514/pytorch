@@ -8,6 +8,7 @@ from .. import functional as F
 from .. import init
 from .module import Module
 from .lazy import LazyModuleMixin
+import time
 
 
 __all__ = [
@@ -112,7 +113,11 @@ class Linear(Module):
 
     def forward(self, input: Tensor) -> Tensor:
         print("In nn.modules.linear")
-        return F.linear(input, self.weight, self.bias)
+        tic = time.time()
+        tmp = F.linear(input, self.weight, self.bias)
+        tok = time.time()
+        print(f"{tic}, {tok}, {tok - tic}, linear forward, linear.py")
+        return tmp
 
     def extra_repr(self) -> str:
         return 'in_features={}, out_features={}, bias={}'.format(
