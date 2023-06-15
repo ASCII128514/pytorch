@@ -1942,7 +1942,6 @@ Tensor _matmul_impl(
               << ", "
               << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
     return tmp;
-    return
   } else if (should_fold(tensor1, dim_tensor2) || should_fold(tensor2, dim_tensor1)) {
     // dim_tensor1 >=3 && (dim_tensor2 == 1 || dim_tensor2 == 2) ||
     // dim_tensor2 >=3 && (dim_tensor1 == 1 || dim_tensor1 == 2)
@@ -2099,10 +2098,10 @@ Tensor _matmul_impl(
 
 Tensor matmul(const Tensor & tensor1, const Tensor & tensor2) {
   // timer for the operation
-  result = at::native::_matmul_impl(unused, tensor1, tensor2);
   std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
   auto maybe_outnames = namedinference::compute_matmul_outnames(tensor1, tensor2);
   at::Tensor result, unused;
+  result = at::native::_matmul_impl(unused, tensor1, tensor2);
   namedinference::propagate_names_if_nonempty(result, maybe_outnames);
   std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
