@@ -112,7 +112,6 @@ class Linear(Module):
             init.uniform_(self.bias, -bound, bound)
 
     def forward(self, input: Tensor) -> Tensor:
-        print("In nn.modules.linear")
         tic = time.time_ns()
         tmp = F.linear(input, self.weight, self.bias)
         tok = time.time_ns()
