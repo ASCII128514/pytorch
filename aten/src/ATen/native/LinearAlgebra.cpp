@@ -1441,8 +1441,8 @@ static void addmm_impl_cpu_(
 
 static void addbmm_impl_(
     Tensor &result, const Tensor &self, const Tensor &batch1, const Tensor &batch2, const Scalar& beta, const Scalar& alpha) {
-  std::chrono::steady_clock::time_point begin =
-      std::chrono::steady_clock::now();
+  std::chrono::system_clock::time_point begin =
+      std::chrono::system_clock::now();
   TORCH_CHECK(batch1.dim() == 3, "batch1 must be a 3D tensor");
   TORCH_CHECK(batch2.dim() == 3, "batch2 must be a 3D tensor");
   TORCH_CHECK(batch1.size(0) == batch2.size(0),
@@ -1472,8 +1472,8 @@ static void addbmm_impl_(
     } else {
       result.zero_();
     }
-    std::chrono::steady_clock::time_point end =
-        std::chrono::steady_clock::now();
+    std::chrono::system_clock::time_point end =
+        std::chrono::system_clock::now();
 
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
               << std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -1489,7 +1489,7 @@ static void addbmm_impl_(
     result.addmm_(batch1[batch], batch2[batch], adjusted_beta, alpha);
     adjusted_beta = 1; // accumulate output once
   }
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
 
   std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
             << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
@@ -1499,7 +1499,7 @@ static void addbmm_impl_(
 }
 
 Tensor& addbmm_out(const Tensor& self, const Tensor& batch1, const Tensor& batch2, const Scalar& beta, const Scalar& alpha, Tensor& result) {
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+  std::chrono::system_clock::time_point begin = std::chrono::system_clock::now();
   auto b_self = expand_size(self, {batch1.size(1), batch2.size(2)}, "addbmm_out");
   {
     at::NoNamesGuard guard;
@@ -1507,7 +1507,7 @@ Tensor& addbmm_out(const Tensor& self, const Tensor& batch1, const Tensor& batch
   }
   auto names = at::namedinference::propagate_names_for_addmm(batch1, batch2, self);
   at::namedinference::propagate_names_if_nonempty(result, names);
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
 
   std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
             << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
@@ -1868,7 +1868,7 @@ Tensor _matmul_impl(
     Tensor& out,
     const Tensor& tensor1,
     const Tensor& tensor2) {
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+  std::chrono::system_clock::time_point begin = std::chrono::system_clock::now();
   NoNamesGuard guard;
   const auto dim_tensor1 = tensor1.dim();
   const auto dim_tensor2 = tensor2.dim();
@@ -1886,8 +1886,8 @@ Tensor _matmul_impl(
   if (dim_tensor1 == 1 && dim_tensor2 == 1) {
     // dot product
     auto tmp =  has_out ? at::dot_out(out, tensor1, tensor2) : tensor1.dot(tensor2);
-    std::chrono::steady_clock::time_point end =
-        std::chrono::steady_clock::now();
+    std::chrono::system_clock::time_point end =
+        std::chrono::system_clock::now();
 
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
               << std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -1900,8 +1900,8 @@ Tensor _matmul_impl(
 
     // matrix vector multiplication
     auto tmp = has_out ? at::mv_out(out, tensor1, tensor2) : tensor1.mv(tensor2);
-    std::chrono::steady_clock::time_point end =
-        std::chrono::steady_clock::now();
+    std::chrono::system_clock::time_point end =
+        std::chrono::system_clock::now();
 
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
               << std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -1916,8 +1916,8 @@ Tensor _matmul_impl(
     auto tmp =  has_out ? at::mm_out(out, tensor1.unsqueeze(0), tensor2).squeeze_(0)
                    : tensor1.unsqueeze(0).mm(tensor2).squeeze_(0);
 
-    std::chrono::steady_clock::time_point end =
-        std::chrono::steady_clock::now();
+    std::chrono::system_clock::time_point end =
+        std::chrono::system_clock::now();
 
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
               << std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -1931,8 +1931,8 @@ Tensor _matmul_impl(
     // 2D matrix mult
     auto tmp =
         has_out ? at::mm_out(out, tensor1, tensor2) : tensor1.mm(tensor2);
-    std::chrono::steady_clock::time_point end =
-        std::chrono::steady_clock::now();
+    std::chrono::system_clock::time_point end =
+        std::chrono::system_clock::now();
 
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
               << std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -1978,8 +1978,8 @@ Tensor _matmul_impl(
         const auto output = at::_unsafe_view(t1_folded.mm(*t2), output_shape);
 
         auto tmp = transpose ? output.mT().contiguous() : output;
-        std::chrono::steady_clock::time_point end =
-            std::chrono::steady_clock::now();
+        std::chrono::system_clock::time_point end =
+            std::chrono::system_clock::now();
 
         std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
                   << std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -1990,8 +1990,8 @@ Tensor _matmul_impl(
         return tmp;
       } else {
         auto tmp = at::_unsafe_view(t1_folded.mv(*t2), output_shape);
-        std::chrono::steady_clock::time_point end =
-            std::chrono::steady_clock::now();
+        std::chrono::system_clock::time_point end =
+            std::chrono::system_clock::now();
 
         std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
                   << std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -2027,8 +2027,8 @@ Tensor _matmul_impl(
       if (!reshaped_out.is_alias_of(out)) {
         out_->copy_(reshaped_out.view_as(*out_));
       }
-      std::chrono::steady_clock::time_point end =
-          std::chrono::steady_clock::now();
+      std::chrono::system_clock::time_point end =
+          std::chrono::system_clock::now();
 
       std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
                 << std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -2081,8 +2081,8 @@ Tensor _matmul_impl(
       if (!reshaped_out.is_alias_of(out)) {
         out.copy_(reshaped_out.view_as(out));
       }
-      std::chrono::steady_clock::time_point end =
-          std::chrono::steady_clock::now();
+      std::chrono::system_clock::time_point end =
+          std::chrono::system_clock::now();
 
       std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
                 << std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -2097,12 +2097,12 @@ Tensor _matmul_impl(
 
 Tensor matmul(const Tensor & tensor1, const Tensor & tensor2) {
   // timer for the operation
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+  std::chrono::system_clock::time_point begin = std::chrono::system_clock::now();
   auto maybe_outnames = namedinference::compute_matmul_outnames(tensor1, tensor2);
   at::Tensor result, unused;
   result = at::native::_matmul_impl(unused, tensor1, tensor2);
   namedinference::propagate_names_if_nonempty(result, maybe_outnames);
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
 
   std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
             << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)

@@ -163,8 +163,8 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
   // Make sure to keep addmm_cuda below in sync with this code; it
   // preflights a check to try to avoid actually needing to call
   // expand().
-  std::chrono::steady_clock::time_point begin =
-      std::chrono::steady_clock::now();
+  std::chrono::system_clock::time_point begin =
+      std::chrono::system_clock::now();
   TORCH_CHECK(mat1.dim() == 2 && mat2.dim() == 2, "tensors must be 2-D");
   TensorArg args[]{{result, "out", 0}, {self, "self", 1}, {mat1, "mat1", 2}, {mat2, "mat2", 3}};
   checkAllSameGPU(__func__, args);
@@ -243,8 +243,8 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
 
   IntArrayRef result_sizes = result.sizes();
   if ((result_sizes[0] == 0) || (result_sizes[1] == 0)) {
-    std::chrono::steady_clock::time_point end =
-        std::chrono::steady_clock::now();
+    std::chrono::system_clock::time_point end =
+        std::chrono::system_clock::now();
 
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
                      begin.time_since_epoch())
@@ -287,8 +287,8 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
     // By definition, when beta==0, values in self should be ignored. nans and infs
     // should not propagate
     if (beta.toComplexDouble() == 0.) {
-      std::chrono::steady_clock::time_point end =
-          std::chrono::steady_clock::now();
+      std::chrono::system_clock::time_point end =
+          std::chrono::system_clock::now();
 
       std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
                        begin.time_since_epoch())
@@ -316,8 +316,8 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
             c10::nullopt /* layout */,
             at::kCPU,
             c10::nullopt /* pin_memory */));
-    std::chrono::steady_clock::time_point end =
-        std::chrono::steady_clock::now();
+    std::chrono::system_clock::time_point end =
+        std::chrono::system_clock::now();
 
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
                      begin.time_since_epoch())
@@ -436,7 +436,7 @@ Tensor& addmm_out_cuda_impl(Tensor& result, const Tensor& self, const Tensor& ma
     result.copy_(*result_);
   }
 
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
 
   std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
                    begin.time_since_epoch())
