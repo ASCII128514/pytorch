@@ -50,6 +50,8 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
 
   if (input.is_mkldnn()) {
     auto tmp = at::mkldnn_linear(input, weight, *bias);
+    std::chrono::system_clock::time_point end =
+        std::chrono::system_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
                      begin.time_since_epoch())
                      .count()
@@ -68,6 +70,8 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
 #if defined(C10_MOBILE)
   if (xnnpack::use_linear(input, weight, *bias)) {
     auto tmp = xnnpack::linear(input, weight, *bias);
+    std::chrono::system_clock::time_point end =
+        std::chrono::system_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
                      begin.time_since_epoch())
                      .count()
@@ -87,6 +91,8 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
   if (input.dim() == 2 && bias->defined()) {
     // Fused op is marginally faster.
     auto tmp = at::addmm(*bias, input, weight.t());
+    std::chrono::system_clock::time_point end =
+        std::chrono::system_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
                      begin.time_since_epoch())
                      .count()
@@ -111,6 +117,8 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
 
     auto tmp = result.view_symint(
         {input_sizes[0], input_sizes[1], result.sym_size(1)});
+    std::chrono::system_clock::time_point end =
+        std::chrono::system_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
                      begin.time_since_epoch())
                      .count()
@@ -136,6 +144,7 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
       output.add_(*bias);
     }
   }
+  std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
   std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
                    begin.time_since_epoch())
                    .count()
