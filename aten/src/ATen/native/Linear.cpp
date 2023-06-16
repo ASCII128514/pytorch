@@ -36,51 +36,118 @@
 #include <utility>
 #include <vector>
 #include <iostream>
-using namespace std;
+#include <chrono>
+
 namespace at { namespace native {
 
 Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Tensor>& bias_opt) {
+  std::chrono::system_clock::time_point begin =
+      std::chrono::system_clock::now();
   // See [Note: hacky wrapper removal for optional tensor]
   auto bias = bias_opt.has_value()
     ? c10::MaybeOwned<Tensor>::borrowed(*bias_opt)
     : c10::MaybeOwned<Tensor>::owned(c10::in_place);
 
   if (input.is_mkldnn()) {
-    cout << "in linear.cpp, if 1";
-    return at::mkldnn_linear(input, weight, *bias);
+    auto tmp = at::mkldnn_linear(input, weight, *bias);
+    std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     begin.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end - begin)
+                     .count()
+              << ", 6, "
+              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+    return tmp;
   }
 #if defined(C10_MOBILE)
   if (xnnpack::use_linear(input, weight, *bias)) {
-    cout << "in linear.cpp, if 2";
-    return xnnpack::linear(input, weight, *bias);
+    auto tmp = xnnpack::linear(input, weight, *bias);
+    std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     begin.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end - begin)
+                     .count()
+              << ", 6, "
+              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+    return tmp;
   }
 #endif
   if (input.dim() == 2 && bias->defined()) {
     // Fused op is marginally faster.
-    cout << "in linear.cpp, if 3";
-    return at::addmm(*bias, input, weight.t());
+    auto tmp = at::addmm(*bias, input, weight.t());
+    std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     begin.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end - begin)
+                     .count()
+              << ", 6, "
+              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+    return tmp;
   }
   if (input.dim() == 3 && bias->defined() && input.is_contiguous() &&
       !input.is_xla()) {
-    cout << "in linear.cpp, if 4";
     // Also hit the fused path for contiguous 3D input, if not using xla
     // backend. Reshaping/flattening has some performance implications on xla.
     const auto input_sizes = input.sym_sizes();
     const auto result = at::addmm(*bias, input.view_symint({input_sizes[0] * input_sizes[1], input_sizes[2]}), weight.t());
-    return result.view_symint({input_sizes[0], input_sizes[1], result.sym_size(1)});
+
+    auto tmp = result.view_symint(
+        {input_sizes[0], input_sizes[1], result.sym_size(1)});
+    std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     begin.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end.time_since_epoch())
+                     .count()
+              << ", "
+              << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                     end - begin)
+                     .count()
+              << ", 6, "
+              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+    return tmp;
   }
   auto output = at::matmul(input, weight.t());
   if (bias->defined()) {
     // for composite compliance use out-of-place version of `add`
     if (isTensorSubclassLike(*bias) ||
         bias->_fw_grad(/*level*/ 0).defined()) {
-      cout << "in linear.cpp, if 5";
       output = at::add(output, *bias);
     } else {
-      cout << "in linear.cpp, if 6";
       output.add_(*bias);
     }
   }
+  std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                   begin.time_since_epoch())
+                   .count()
+            << ", "
+            << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                   end.time_since_epoch())
+                   .count()
+            << ", "
+            << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
+                   .count()
+            << ", 6, "
+            << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
   return output;
 }
 

@@ -1479,7 +1479,7 @@ static void addbmm_impl_(
               << std::chrono::duration_cast<std::chrono::nanoseconds>(
                      end - begin)
                      .count()
-              << ", "
+              << ", -1, "
               << "addbmm_out, LinearAlgebra.cpp" << std::endl;
     return;
   }
@@ -1893,7 +1893,7 @@ Tensor _matmul_impl(
               << std::chrono::duration_cast<std::chrono::nanoseconds>(
                      end - begin)
                      .count()
-              << ", "
+              << ", -1, "
               << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
     return tmp;
   } else if (dim_tensor1 == 2 && dim_tensor2 == 1) {
@@ -1907,7 +1907,7 @@ Tensor _matmul_impl(
               << std::chrono::duration_cast<std::chrono::nanoseconds>(
                      end - begin)
                      .count()
-              << ", "
+              << ", -1, "
               << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
     return tmp;
   } else if (dim_tensor1 == 1 && dim_tensor2 == 2) {
@@ -1923,7 +1923,7 @@ Tensor _matmul_impl(
               << std::chrono::duration_cast<std::chrono::nanoseconds>(
                      end - begin)
                      .count()
-              << ", "
+              << ", -1, "
               << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
     return tmp;
   } else if (dim_tensor1 == 2 && dim_tensor2 == 2) {
@@ -1938,7 +1938,7 @@ Tensor _matmul_impl(
               << std::chrono::duration_cast<std::chrono::nanoseconds>(
                      end - begin)
                      .count()
-              << ", "
+              << ", -1, "
               << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
     return tmp;
   } else if (should_fold(tensor1, dim_tensor2) || should_fold(tensor2, dim_tensor1)) {

@@ -115,7 +115,7 @@ class Linear(Module):
         tic = time.time_ns()
         tmp = F.linear(input, self.weight, self.bias)
         tok = time.time_ns()
-        print(f"{tic}, {tok}, {tok - tic}, linear forward, linear.py")
+        print(f"{tic}, {tok}, {tok - tic}, 5, linear forward, linear.py")
         return tmp
 
     def extra_repr(self) -> str:
