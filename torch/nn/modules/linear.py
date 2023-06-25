@@ -112,11 +112,11 @@ class Linear(Module):
             init.uniform_(self.bias, -bound, bound)
 
     def forward(self, input: Tensor) -> Tensor:
-        tic = time.time_ns()
-        tmp = F.linear(input, self.weight, self.bias)
-        tok = time.time_ns()
-        print(f"{tic}, {tok}, {tok - tic}, 5, linear forward, linear.py")
-        return tmp
+        # tic = time.time_ns()
+        # tmp = F.linear(input, self.weight, self.bias)
+        # tok = time.time_ns()
+        # print(f"{tic}, {tok}, {tok - tic}, 5, linear forward, linear.py")
+        return F.linear(input, self.weight, self.bias)
 
     def extra_repr(self) -> str:
         return 'in_features={}, out_features={}, bias={}'.format(

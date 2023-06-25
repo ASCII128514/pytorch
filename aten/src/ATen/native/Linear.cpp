@@ -64,7 +64,7 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
                      end - begin)
                      .count()
               << ", 6, "
-              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+              << "_matmul_impl, Linear.cpp" << std::endl;
     return tmp;
   }
 #if defined(C10_MOBILE)
@@ -84,7 +84,7 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
                      end - begin)
                      .count()
               << ", 6, "
-              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+              << "_matmul_impl, Linear.cpp" << std::endl;
     return tmp;
   }
 #endif
@@ -105,7 +105,7 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
                      end - begin)
                      .count()
               << ", 6, "
-              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+              << "_matmul_impl, Linear.cpp" << std::endl;
     return tmp;
   }
   if (input.dim() == 3 && bias->defined() && input.is_contiguous() &&
@@ -131,7 +131,7 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
                      end - begin)
                      .count()
               << ", 6, "
-              << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+              << "_matmul_impl, Linear.cpp" << std::endl;
     return tmp;
   }
   auto output = at::matmul(input, weight.t());
@@ -156,7 +156,7 @@ Tensor linear(const Tensor& input, const Tensor& weight, const c10::optional<Ten
             << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
                    .count()
             << ", 6, "
-            << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
+            << "_matmul_impl, Linear.cpp" << std::endl;
   return output;
 }
 

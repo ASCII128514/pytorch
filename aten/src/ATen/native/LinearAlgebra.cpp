@@ -2034,7 +2034,7 @@ Tensor _matmul_impl(
                 << std::chrono::duration_cast<std::chrono::nanoseconds>(
                        end - begin)
                        .count()
-                << ", "
+                << ", -1, "
                 << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
       return out;
     }
@@ -2084,11 +2084,18 @@ Tensor _matmul_impl(
       std::chrono::system_clock::time_point end =
           std::chrono::system_clock::now();
 
-      std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
+      std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                       begin.time_since_epoch())
+                       .count()
+                << ", "
+                << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                       end.time_since_epoch())
+                       .count()
+                << ", "
                 << std::chrono::duration_cast<std::chrono::nanoseconds>(
                        end - begin)
                        .count()
-                << ", "
+                << ", -1, "
                 << "_matmul_impl, LinearAlgebra.cpp" << std::endl;
       return out;
     }
@@ -2104,10 +2111,17 @@ Tensor matmul(const Tensor & tensor1, const Tensor & tensor2) {
   namedinference::propagate_names_if_nonempty(result, maybe_outnames);
   std::chrono::system_clock::time_point end = std::chrono::system_clock::now();
 
-  std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(begin.time_since_epoch()).count() << ", " << std::chrono::duration_cast<std::chrono::nanoseconds>(end.time_since_epoch()).count() << ", "
-            << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
+  std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                   begin.time_since_epoch())
                    .count()
             << ", "
+            << std::chrono::duration_cast<std::chrono::nanoseconds>(
+                   end.time_since_epoch())
+                   .count()
+            << ", "
+            << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin)
+                   .count()
+            << ", 5, "
             << "matmul, LinearAlgebra.cpp" << std::endl;
   return result;
 }
